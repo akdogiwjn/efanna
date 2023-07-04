@@ -16,7 +16,7 @@ public:
 	{
 		init_algorithm init_index_type= params.init_index_type;
 		index_params_ = params;
-		initIndex_ = create_index_by_type(init_index_type, features, params, d);
+		initIndex_ = create_index_by_type(init_index_type, features, params, d);//以features, params, d三个参数返回KDTreeUbIndex
 	}
 
 	virtual ~FIndex () {
@@ -38,7 +38,7 @@ public:
 	void loadIndex(char* filename){
 		initIndex_->loadIndex(filename);
 	}
-	void saveTrees(char* filename){
+	void saveTrees(const char* filename){
 		initIndex_->saveTrees(filename);
 	}
 	void loadTrees(char* filename){

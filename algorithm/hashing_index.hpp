@@ -1296,7 +1296,7 @@ class HASHINGIndex : public InitIndex<DataType>
               L++;
             }
           }
-          if(~bSorted){
+          if(!bSorted){
             std::sort(knn.begin(), knn.begin() + L);
           }
 
@@ -1563,7 +1563,7 @@ class HASHINGIndex : public InitIndex<DataType>
               L++;
             }
           }
-          if(~bSorted){
+          if(!bSorted){
             std::sort(knn.begin(), knn.begin() + L);
           }
 
@@ -1631,7 +1631,7 @@ class HASHINGIndex : public InitIndex<DataType>
     void loadIndex(char* filename){}
     void saveIndex(char* filename){}
     void loadTrees(char* filename){}
-    void saveTrees(char* filename){}
+    void saveTrees(const char* filename){}
     void loadGraph(char* filename){
       std::ifstream in(filename,std::ios::binary);
       in.seekg(0,std::ios::end);

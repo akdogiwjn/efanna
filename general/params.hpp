@@ -20,7 +20,7 @@ namespace efanna {
 
     init_algorithm init_index_type;
     size_t K;  //build knn table with nn = K
-    size_t S;  //nn sets' max size
+    size_t S;  //nn sets' max size  控制树节点大小
     size_t L =30;//rnn size
     size_t TNS = 10;//tree node size
     size_t Check_K = 40;

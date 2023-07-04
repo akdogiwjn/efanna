@@ -31,6 +31,9 @@ struct KDTreeUbIndexParams : public IndexParams
 		extra_params.insert(std::make_pair("ml",merge_levelv));
 		L = myL;
 		Check_K = check;
+#ifdef INFO
+		std::cout << "Building kdtree with leaf size "<< S  << std::endl;
+#endif
 	}
 };
 template <typename DataType>
@@ -61,23 +64,23 @@ public:
 		it = params_.extra_params.find("treesb");
 		if(it != params_.extra_params.end()){
 			TreeNumBuild = (it->second).int_val;
-#ifdef INFO
-			std::cout << "Building kdtree graph with "<< TreeNumBuild <<" trees"<< std::endl;
-#endif
+// #ifdef INFO
+// 			std::cout << "Building kdtree graph with "<< TreeNumBuild <<" trees"<< std::endl;
+// #endif
 		}
 		else{
 			TreeNumBuild = TreeNum;
-#ifdef INFO
-			std::cout << "Building kdtree graph with "<< TreeNumBuild <<" trees"<< std::endl;
-#endif
+// #ifdef INFO
+// 			std::cout << "Building kdtree graph with "<< TreeNumBuild <<" trees"<< std::endl;
+// #endif
 		}
 
 		it = params_.extra_params.find("ml");
 		if(it != params_.extra_params.end()){
 			ml = (it->second).int_val;
-#ifdef INFO
-			std::cout << "Building kdtree initial index with merge level "<< ml  << std::endl;
-#endif
+// #ifdef INFO
+// 			std::cout << "Building kdtree initial index with merge level "<< ml  << std::endl;
+// #endif
 		}
 		else{
 			ml = -1;
@@ -194,7 +197,7 @@ public:
 		}
 		in.close();
 	}
-	void saveTrees(char* filename){
+	void saveTrees(const char* filename){
 		unsigned int K = params_.K;
 		size_t num = features_.get_rows();
 		size_t dim = features_.get_cols();
@@ -203,7 +206,7 @@ public:
 		unsigned int tree_num = tree_roots_.size();
 
 		//write file head
-		out.write((char *)&(K), sizeof(unsigned int));
+		out.write((char *)&(K), sizeof(unsigned int));//拿来干嘛
 		out.write((char *)&(tree_num), sizeof(unsigned int));
 		out.write((char *)&(num), sizeof(size_t)); //feature point number
 		out.write((char *)&(dim), sizeof(size_t)); //feature dim
@@ -214,25 +217,28 @@ public:
 			//write tree nodes with depth first trace
 
 
-			size_t offset_node_num = out.tellp();
+			size_t offset_node_num = out.tellp();//获取当前位置
 
-			out.seekp(sizeof(int),std::ios::cur);
+			out.seekp(sizeof(int),std::ios::cur);//空一个int位置 用于写node_num
 
 			unsigned int node_size = sizeof(struct Node);
 			out.write((char *)&(node_size), sizeof(int));
 
 			unsigned int node_num = DepthFirstWrite(out, *it);
 
-			out.seekg(offset_node_num,std::ios::beg);
+			out.seekg(offset_node_num,std::ios::beg);//对文件进行定位 写node_num
 
 			out.write((char *)&(node_num), sizeof(int));
 
-			out.seekp(0,std::ios::end);
+			out.seekp(0,std::ios::end);//将输出文件指针跳转到指末尾
 			//std::cout<<"tree: "<<cnt++<<" written, node: "<<node_num<<" at offset " << offset_node_num <<std::endl;
+			#ifdef INFO
+				std::cout << "Tree node num "<< node_num  << std::endl;
+			#endif
 		}
 
 		if(LeafLists.size()!=tree_num){ std::cout << "leaf_size!=tree_num" << std::endl; exit(-6); }
-
+		//写顶点列表
 		for(unsigned int i=0; i<tree_num; i++){
 			for(unsigned int j=0;j<num;j++){
 				out.write((char *)&(LeafLists[i][j]), sizeof(int));
@@ -584,7 +590,7 @@ public:
 						L++;
 					}
 				}
-				if(~bSorted){
+				if(!bSorted){
 					std::sort(knn.begin(), knn.begin() + L);
 				}
 
@@ -910,19 +916,21 @@ public:
           sampled to get a good estimate.
 		 */
 		unsigned cnt = std::min((unsigned)SAMPLE_NUM+1, count);
+		//将前cnt个向量的每一维累加到mean_中
 		for (unsigned j = 0; j < cnt; ++j) {
 			const DataType* v = features_.get_row(indices[j]);
 			for (size_t k=0; k<veclen_; ++k) {
 				mean_[k] += v[k];
 			}
 		}
+		//将mean_每一位取平均
 		DataType div_factor = DataType(1)/cnt;
 		for (size_t k=0; k<veclen_; ++k) {
 			mean_[k] *= div_factor;
 		}
 
 		/* Compute variances (no need to divide by count). */
-
+		//计算前cnt个向量与mean_的距离，每一维存到var_
 		for (unsigned j = 0; j < cnt; ++j) {
 			const DataType* v = features_.get_row(indices[j]);
 			for (size_t k=0; k<veclen_; ++k) {
@@ -932,8 +940,9 @@ public:
 		}
 
 		/* Select one of the highest variance indices at random. */
+		//从var_最大的几个维度随机挑一个维度
 		cutdim = selectDivision(rng, var_);
-
+		//切分维度的平均值cutval
 		cutval = mean_[cutdim];
 
 		unsigned lim1, lim2;
@@ -1206,7 +1215,7 @@ protected:
 
 		//build tree
 		std::vector<int> indices(N);
-		LeafLists.resize(TreeNum);
+		LeafLists.resize(TreeNum);//
 		std::vector<Node*> ActiveSet;
 		std::vector<Node*> NewSet;
 		for(unsigned i = 0; i < (unsigned)TreeNum; i++){
@@ -1218,7 +1227,7 @@ protected:
 			node->EndIdx = N;
 			node->treeid = i;
 			tree_roots_.push_back(node);
-			ActiveSet.push_back(node);
+			ActiveSet.push_back(node);//与树数目相同
 		}
 #pragma omp parallel for
 		for(unsigned i = 0; i < N; i++)indices[i] = i;
@@ -1238,12 +1247,16 @@ protected:
 				unsigned cutdim;
 				DataType cutval;
 				std::mt19937 rng(seed ^ omp_get_thread_num());
-				std::vector<unsigned>& myids = LeafLists[node->treeid];
-
+				std::vector<unsigned>& myids = LeafLists[node->treeid];//每个树都有自己独立的编号列表
+				//将列表进行切分
+				//会改变LeafLists中的顶点顺序
+				//mid  切分左子树大小
+				//cutdim 此次切分基于的维度
+				//cutval 此次切分维度的平均值
 				meanSplit(rng, &myids[0]+node->StartIdx, node->EndIdx - node->StartIdx, mid, cutdim, cutval);
 
 				node->DivDim = cutdim;
-				node->DivVal = cutval;
+				node->DivVal = cutval;//
 				//node->StartIdx = offset;
 				//node->EndIdx = offset + count;
 				Node* nodeL = new Node(); Node* nodeR = new Node();
@@ -1255,7 +1268,8 @@ protected:
 				node->Lchild = nodeL;
 				node->Rchild = nodeR;
 				omp_set_lock(&rootlock);
-				if(mid>params_.S)NewSet.push_back(nodeL);
+				//params_.S似乎控制叶子大小
+				if(mid>params_.S)  NewSet.push_back(nodeL);
 				if(nodeR->EndIdx - nodeR->StartIdx > params_.S)NewSet.push_back(nodeR);
 				omp_unset_lock(&rootlock);
 			}
@@ -1263,6 +1277,7 @@ protected:
 			std::copy(NewSet.begin(), NewSet.end(),ActiveSet.begin());
 			NewSet.clear();
 		}
+		//当子节点过多，用dfs方式构建
 #pragma omp parallel for
 		for(unsigned i = 0; i < ActiveSet.size(); i++){
 			Node* node = ActiveSet[i];
@@ -1274,6 +1289,8 @@ protected:
 			DFSbuild(node, rng, &myids[0]+node->StartIdx, node->EndIdx-node->StartIdx, node->StartIdx);
 		}
 	}
+
+
     void outputVisitBucketNum(){}
 
 	void initGraph(){

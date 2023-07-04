@@ -128,7 +128,7 @@ namespace efanna{
     virtual void loadIndex(char* filename) = 0;
     virtual void saveIndex(char* filename) = 0;
     virtual void loadTrees(char* filename) = 0;
-    virtual void saveTrees(char* filename) = 0;
+    virtual void saveTrees(const char* filename) = 0;
     virtual void loadGraph(char* filename) = 0;
     virtual void saveGraph(char* filename) = 0;
 	virtual void outputVisitBucketNum() = 0;

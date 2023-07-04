@@ -16,18 +16,27 @@ HEADERS=$(wildcard ./*.hpp ./*/*.hpp)
 #SHARED_LIB=libefnn.so
 #OBJS=src/efnn.o
 
-all: $(SHARED_LIB) $(SAMPLES)
+# all: $(SHARED_LIB) $(SAMPLES)
 
 #$(SHARED_LIB): $(OBJS)
 #	$(GXX) $(LDFLAGS) $(LIBS) $(OBJS) -shared -o $(SHARED_LIB)
 
-$(SAMPLES): %: %.o
-	$(GXX) $^ -o $@ $(LDFLAGS) $(LIBS)
+# $(SAMPLES): %: %.o
+# 	$(GXX) $^ -o $@ $(LDFLAGS) $(LIBS)
 
-%.o: %.cpp $(HEADERS)
-	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cpp -o $@
+# %.o: %.cpp $(HEADERS)
+# 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cpp -o $@
 
-%.o: %.cc $(HEADERS)
+# %.o: %.cc $(HEADERS)
+# 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cc -o $@
+
+tree: samples/efanna_index_buildtrees.o
+	$(GXX) $^ -o samples/tree $(LDFLAGS) $(LIBS)
+
+# efanna_index_buildtrees.o: efanna_index_buildtrees.cpp $(HEADERS)
+# 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cpp -o $@
+
+samples/efanna_index_buildtrees.o: samples/efanna_index_buildtrees.cc $(HEADERS)
 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cc -o $@
 
 clean:
