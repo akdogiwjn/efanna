@@ -1630,8 +1630,9 @@ class HASHINGIndex : public InitIndex<DataType>
 
     void loadIndex(char* filename){}
     void saveIndex(char* filename){}
-    void loadTrees(char* filename){}
+    void loadTrees(const char* filename){}
     void saveTrees(const char* filename){}
+    void evaluate_tree(){}
     void loadGraph(char* filename){
       std::ifstream in(filename,std::ios::binary);
       in.seekg(0,std::ios::end);

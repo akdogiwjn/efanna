@@ -24,7 +24,7 @@ struct KDTreeUbIndexParams : public IndexParams
 		treev.int_val = tree_num_total;
 		extra_params.insert(std::make_pair("trees",treev));
 		ValueType treeb;
-		treeb.int_val = tree_num_build > 0 ? tree_num_build : tree_num_total;
+		treeb.int_val = tree_num_build > 0 ? tree_num_build : tree_num_total;// tree_num_build<=tree_num_total
 		extra_params.insert(std::make_pair("treesb",treeb));
 		ValueType merge_levelv;
 		merge_levelv.int_val = merge_level;
@@ -139,7 +139,7 @@ public:
 		save_data(filename, params_.K, points_num, feature_dim);
 	}
 	//algorithms copy and rewrite from flann
-	void loadTrees(char* filename){
+	void loadTrees(const char* filename){
 		std::ifstream in(filename, std::ios::binary|std::ios::in);
 		if(!in.is_open()){std::cout<<"open file error"<<std::endl;exit(-10087);}
 		unsigned int K,tree_num;
@@ -196,6 +196,71 @@ public:
 			LeafLists.push_back(leaves);
 		}
 		in.close();
+	}
+	void evaluate_tree(){
+		//
+		assert(LeafLists[0].size() == 100000000);
+		long unsigned int index_a = 0;
+		std::vector<long unsigned int> index_b;
+		// long unsigned int id_a = 2800456;
+		// long unsigned int id_b[10] = {81828526,61645582,48784730,87280042,59531190,72992009,77704040,18799352,20094947,20833908};
+		// long unsigned int id_a = 44978337;
+		// long unsigned int id_b[10] = {21944059,93126315,19247249,24536836,93901359,23931755,92739004,92369933,5273532,33732432};
+		long unsigned int id_a = 85313188;
+		long unsigned int id_b[10] = {78855438,24801548,61924776,68747393,98825370, 78283041,93528685,55389383,69361415,98644071};
+		for(long unsigned int i=0;i<LeafLists[0].size();i++){
+
+			if(LeafLists[0][i] == id_a){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_a = i;
+			}
+			if(LeafLists[0][i] == id_b[0]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[1]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[2]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[3]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[4]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[5]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[6]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[7]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[8]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+			if(LeafLists[0][i] == id_b[9]){
+				std::cout<<"id: "<<LeafLists[0][i]<<" index: "<<i<<std::endl;
+				index_b.push_back(i);
+			}
+
+		}
+		for(long unsigned int i =0; i< index_b.size();i++){
+			if(index_a > index_b[i]) std::cout<<index_a-index_b[i]<<" ";
+			else std::cout<<index_b[i] - index_a<<" ";
+		}
+		std::cout<<"\n";
 	}
 	void saveTrees(const char* filename){
 		unsigned int K = params_.K;

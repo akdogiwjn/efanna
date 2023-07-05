@@ -41,7 +41,7 @@ public:
 	void saveTrees(const char* filename){
 		initIndex_->saveTrees(filename);
 	}
-	void loadTrees(char* filename){
+	void loadTrees(const char* filename){
 		initIndex_->loadTrees(filename);
 	}
 	void saveGraph(char* filename){
@@ -55,6 +55,9 @@ public:
 	}
 	void setSearchParams(int epochs, int init_num, int extend_to, int search_trees = 0, int search_lv=-1, int search_method = 0){
 		initIndex_->setSearchParams(epochs, init_num, extend_to,search_trees, search_lv, search_method);
+	}
+	void evaluate_tree(){
+		initIndex_->evaluate_tree();
 	}
 	size_t getGraphSize(){
 		return initIndex_->getGraphSize();

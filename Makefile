@@ -32,11 +32,12 @@ HEADERS=$(wildcard ./*.hpp ./*/*.hpp)
 
 tree: samples/efanna_index_buildtrees.o
 	$(GXX) $^ -o samples/tree $(LDFLAGS) $(LIBS)
-
-# efanna_index_buildtrees.o: efanna_index_buildtrees.cpp $(HEADERS)
-# 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cpp -o $@
-
 samples/efanna_index_buildtrees.o: samples/efanna_index_buildtrees.cc $(HEADERS)
+	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cc -o $@
+
+eva:samples/evaluate_tree.o
+	$(GXX) $^ -o samples/evaluate_tree $(LDFLAGS) $(LIBS)
+samples/evaluate_tree.o: samples/evaluate_tree.cc $(HEADERS)
 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cc -o $@
 
 clean:

@@ -127,11 +127,12 @@ namespace efanna{
     virtual void buildIndexImpl() = 0;
     virtual void loadIndex(char* filename) = 0;
     virtual void saveIndex(char* filename) = 0;
-    virtual void loadTrees(char* filename) = 0;
+    virtual void loadTrees(const char* filename) = 0;
     virtual void saveTrees(const char* filename) = 0;
     virtual void loadGraph(char* filename) = 0;
     virtual void saveGraph(char* filename) = 0;
-	virtual void outputVisitBucketNum() = 0;
+    virtual void evaluate_tree() = 0;
+	  virtual void outputVisitBucketNum() = 0;
 
     void saveResults(char* filename){
        std::ofstream out(filename,std::ios::binary);
