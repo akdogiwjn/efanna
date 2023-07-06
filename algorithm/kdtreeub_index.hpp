@@ -138,6 +138,27 @@ public:
 		size_t feature_dim = features_.get_cols();
 		save_data(filename, params_.K, points_num, feature_dim);
 	}
+	void DepthFirstReadNode(struct Node *root,std::string identifier){
+		if(root->Lchild == NULL  && root->Rchild == NULL){
+			for(size_t i= root->StartIdx; i<root->EndIdx; i++){
+				if(Node_Identifier[i] != ""){
+					std::cout<<"Node_Identifier error\n";
+					exit(-8);
+				}
+				Node_Identifier[i] = identifier;
+				vertex_counter++;
+			}
+			node_counter++;
+			return;
+		}
+		else if(root->Lchild == NULL  || root->Rchild == NULL){
+			std::cout<<"DepthFirstReadNode child error\n";
+			exit(-7);
+		}
+		DepthFirstReadNode(root->Lchild,identifier+"0");
+		DepthFirstReadNode(root->Rchild,identifier+"1");
+		return;
+	}
 	//algorithms copy and rewrite from flann
 	void loadTrees(const char* filename){
 		std::ifstream in(filename, std::ios::binary|std::ios::in);
@@ -154,7 +175,7 @@ public:
 		SP.tree_num = tree_num;
 
 		//read trees
-
+		//同时为每个分区生成标识符，存到每个点上
 		tree_roots_.clear();
 		for(unsigned int i=0;i<tree_num;i++){// for each tree
 			int node_num, node_size;
@@ -182,7 +203,22 @@ public:
 			if(root==NULL){ exit(-11); }
 			tree_roots_.push_back(root);
 		}
-
+		//
+		typename std::vector<Node *>::iterator it;
+		if(tree_roots_.size() > 1){
+			std::cout<<"tree num error\n";
+		}
+		Node_Identifier.clear();
+		for(size_t i = 0; i<num; i++){
+			Node_Identifier.push_back("");
+		}
+		node_counter = 0;
+		vertex_counter = 0;
+		for(it=tree_roots_.begin(); it!=tree_roots_.end(); it++){
+			//write tree nodes with depth first trace
+			DepthFirstReadNode(*it,"");
+		}
+		std::cout<<"node_counter: "<<node_counter<<" vectex_counter: "<<vertex_counter<<std::endl;
 		//read index range
 		LeafLists.clear();
 		for(unsigned int i=0;i<tree_num;i++){
@@ -198,7 +234,72 @@ public:
 		in.close();
 	}
 	void evaluate_tree(){
-		//
+		assert(LeafLists[0].size() == 100000000);
+		unsigned int vectex_num = (unsigned int )LeafLists[0].size();
+		unsigned int * vertex_index = (unsigned int *)malloc(sizeof(unsigned int)*vectex_num);
+		for(unsigned int i=0;i<vectex_num;i++){
+			vertex_index[LeafLists[0][i]] = i;
+		}
+		std::ifstream in("/data/lcq_data/sift100m/tree/sift100m_100nn", std::ios::binary);
+		if(!in.is_open()){std::cout<<"open knn file error"<<std::endl;exit(-10087);}
+		std::ofstream os("./knn_dist.csv", std::ios::binary);
+		if(!os.is_open()){std::cout<<"open knn_dist file error"<<std::endl;exit(-10087);}
+		for(int i = 0; i< 100; i++){
+			size_t id_a = 0;
+			int dist_0 = 0;
+			int dist_1 = 0;
+			int dist_2 = 0;
+			int dist_3 = 0;
+			int dist_4 = 0;
+			std::vector<size_t> knn_v(100);
+			in.read((char *)&id_a, sizeof(size_t));
+			in.read((char *)&knn_v[0], sizeof(size_t)*100);
+			std::string str1 = Node_Identifier[vertex_index[id_a]];
+			if(i == 0 || i==99){
+				std::cout<<"id_a: "<<id_a<<" index: "<<vertex_index[id_a]<<" idf: "<<str1<<"\n";
+			}
+			int len1 = str1.length();
+			int * dist_v = (int*)malloc((len1+1)*sizeof(int));
+			for(int j= 0; j<len1+1;j++){
+				dist_v[j] = 0;
+			}
+			for(int j  = 90; j<100 ;j++){
+				std::string str2 = Node_Identifier[vertex_index[knn_v[j]]];
+				int len2 = str2.length();
+				int t = 0;
+				for(; t<len1;){
+					if(t >= len2){
+						break;
+					}
+					else if(str1[t] == str2[t]){
+						t++;
+					}
+					else{
+						// t++;
+						break;
+					}
+				}
+				dist_v[t]++;
+				if(i == 0 || i==99){
+					std::cout<<"id_b: "<<knn_v[j]<<" index: "<<vertex_index[knn_v[j]]<<" idf: "<<str2<<" t: "<<t<<"\n";;
+				}
+			}
+			dist_0 = dist_v[len1];
+			if(len1-1 >= 0)dist_1 = dist_v[len1-1];
+			if(len1-2 >= 0)dist_2 = dist_v[len1-2];
+			if(len1-3 >= 0)dist_3 = dist_v[len1-3];
+			for(int j= 0; (len1-3> 0) && (j<len1-3);j++){
+				dist_4 += dist_v[j];
+			}
+			free(dist_v);
+			if(i == 0 || i==99){std::cout<<dist_0<<" "<<dist_1<<","<<dist_2<<","<<dist_3<<" "<<dist_4<<"\n";}
+			os<<id_a<<","<<dist_0<<","<<dist_1<<","<<dist_2<<","<<dist_3<<","<<dist_4<<std::endl;
+		}
+		free(vertex_index);
+		in.close();
+		os.close();
+	}
+	void evaluate_tree1(){
 		assert(LeafLists[0].size() == 100000000);
 		long unsigned int index_a = 0;
 		std::vector<long unsigned int> index_b;
@@ -206,8 +307,10 @@ public:
 		// long unsigned int id_b[10] = {81828526,61645582,48784730,87280042,59531190,72992009,77704040,18799352,20094947,20833908};
 		// long unsigned int id_a = 44978337;
 		// long unsigned int id_b[10] = {21944059,93126315,19247249,24536836,93901359,23931755,92739004,92369933,5273532,33732432};
-		long unsigned int id_a = 85313188;
-		long unsigned int id_b[10] = {78855438,24801548,61924776,68747393,98825370, 78283041,93528685,55389383,69361415,98644071};
+		// long unsigned int id_a = 85313188;
+		// long unsigned int id_b[10] = {78855438,24801548,61924776,68747393,98825370, 78283041,93528685,55389383,69361415,98644071};
+		long unsigned int id_a = 63901552;
+		long unsigned int id_b[10] = {13827606,18334299,91887814,68468118,27077957,89002092,72981011,2114852,24144261,9889807};
 		for(long unsigned int i=0;i<LeafLists[0].size();i++){
 
 			if(LeafLists[0][i] == id_a){
@@ -1188,6 +1291,9 @@ protected:
 	std::vector<Node*> tree_roots_;
 	std::vector< std::pair<Node*,size_t> > mlNodeList;
 	std::vector<std::vector<unsigned>> LeafLists;
+	std::vector<std::string> Node_Identifier;
+	size_t node_counter;
+	size_t vertex_counter;
 	USING_BASECLASS_SYMBOLS
 
 	//kgraph code

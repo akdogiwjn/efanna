@@ -13,7 +13,7 @@ int main(){
     int node_size = 1000000;
     float * data_load= NULL;;
     Matrix<float> dataset(0,0,data_load);
-    FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::KDTreeUbIndexParams(true, 8 ,8 ,10,25,30,node_size));
+    FIndex<float> index(dataset, new L2DistanceAVX<float>(), efanna::KDTreeUbIndexParams(true, 1, 8 ,8 ,10,25,30,1,node_size));
     index.loadTrees(tree_path.c_str());
     index.evaluate_tree();
 }

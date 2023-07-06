@@ -36,7 +36,7 @@ samples/efanna_index_buildtrees.o: samples/efanna_index_buildtrees.cc $(HEADERS)
 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cc -o $@
 
 eva:samples/evaluate_tree.o
-	$(GXX) $^ -o samples/evaluate_tree $(LDFLAGS) $(LIBS)
+	$(GXX) $^ -o samples/eva $(LDFLAGS) $(LIBS)
 samples/evaluate_tree.o: samples/evaluate_tree.cc $(HEADERS)
 	$(GXX) $(CPFLAGS) $(INCLUDES) -c $*.cc -o $@
 
