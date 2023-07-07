@@ -5,6 +5,7 @@
 #include <ctime>
 #include <string.h>
 #include <random>
+#include <algorithm>
 #include <queue>
 //#include <bitset>
 //using std::bitset;
@@ -148,6 +149,7 @@ public:
 				Node_Identifier[i] = identifier;
 				vertex_counter++;
 			}
+			Node_Identifier_Uni.push_back(identifier);
 			node_counter++;
 			return;
 		}
@@ -209,6 +211,7 @@ public:
 			std::cout<<"tree num error\n";
 		}
 		Node_Identifier.clear();
+		Node_Identifier_Uni.clear();
 		for(size_t i = 0; i<num; i++){
 			Node_Identifier.push_back("");
 		}
@@ -246,11 +249,6 @@ public:
 		if(!os.is_open()){std::cout<<"open knn_dist file error"<<std::endl;exit(-10087);}
 		for(int i = 0; i< 100; i++){
 			size_t id_a = 0;
-			int dist_0 = 0;
-			int dist_1 = 0;
-			int dist_2 = 0;
-			int dist_3 = 0;
-			int dist_4 = 0;
 			std::vector<size_t> knn_v(100);
 			in.read((char *)&id_a, sizeof(size_t));
 			in.read((char *)&knn_v[0], sizeof(size_t)*100);
@@ -260,8 +258,10 @@ public:
 			}
 			int len1 = str1.length();
 			int * dist_v = (int*)malloc((len1+1)*sizeof(int));
+			int * dist_c = (int*)malloc((len1+1)*sizeof(int));
 			for(int j= 0; j<len1+1;j++){
 				dist_v[j] = 0;
+				dist_c[j] = 0;
 			}
 			for(int j  = 90; j<100 ;j++){
 				std::string str2 = Node_Identifier[vertex_index[knn_v[j]]];
@@ -284,16 +284,40 @@ public:
 					std::cout<<"id_b: "<<knn_v[j]<<" index: "<<vertex_index[knn_v[j]]<<" idf: "<<str2<<" t: "<<t<<"\n";;
 				}
 			}
-			dist_0 = dist_v[len1];
-			if(len1-1 >= 0)dist_1 = dist_v[len1-1];
-			if(len1-2 >= 0)dist_2 = dist_v[len1-2];
-			if(len1-3 >= 0)dist_3 = dist_v[len1-3];
-			for(int j= 0; (len1-3> 0) && (j<len1-3);j++){
-				dist_4 += dist_v[j];
+			for(int j  = 0; j< Node_Identifier_Uni.size() ;j++){
+				int len2 = Node_Identifier_Uni[j].length();
+				int t = 0;
+				for(; t<len1;){
+					if(t >= len2){
+						break;
+					}
+					else if(str1[t] == Node_Identifier_Uni[j][t]){
+						t++;
+					}
+					else{
+						// t++;
+						break;
+					}
+				}
+				dist_c[t]++;
+			}
+			os<<id_a;
+			for(int i = len1 ;i >=0; i--){
+				if(dist_v[i] > 0) assert(dist_c[i] > 0);
+
+				if(dist_c[i] > 0) os<<","<<dist_v[i]<<","<<dist_c[i]<<","<<dist_v[i]*1.0/dist_c[i];
+				else os<<","<<dist_v[i]<<","<<dist_c[i]<<","<<0;
+			}
+			os<<std::endl;
+			if(i == 0 || i==99){
+				std::cout<<id_a;
+				for(int i = len1 ;i >=0; i--){
+					std::cout<<","<<dist_v[i]<<","<<dist_c[i];
+				}
+				std::cout<<std::endl;
 			}
 			free(dist_v);
-			if(i == 0 || i==99){std::cout<<dist_0<<" "<<dist_1<<","<<dist_2<<","<<dist_3<<" "<<dist_4<<"\n";}
-			os<<id_a<<","<<dist_0<<","<<dist_1<<","<<dist_2<<","<<dist_3<<","<<dist_4<<std::endl;
+			free(dist_c);
 		}
 		free(vertex_index);
 		in.close();
@@ -1292,6 +1316,7 @@ protected:
 	std::vector< std::pair<Node*,size_t> > mlNodeList;
 	std::vector<std::vector<unsigned>> LeafLists;
 	std::vector<std::string> Node_Identifier;
+	std::vector<std::string> Node_Identifier_Uni;
 	size_t node_counter;
 	size_t vertex_counter;
 	USING_BASECLASS_SYMBOLS
