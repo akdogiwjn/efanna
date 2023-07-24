@@ -151,7 +151,7 @@ void load_data100m( float*& data, size_t& num,int& dim){// load data with sift10
 }
 int main(int argc, char** argv){
   // const char * in_path = "/data/lcq_data/sift100m/000_to_299_bin/sift100m_base_00000.bin";
-  const char * out_path = "/data/lcq_data/sift100m/tree/sift.trees";
+  const char * out_path = "/data/lcq_data/sift100m/tree/sift1.trees";
   // if( argc != 2 ) {cout<< argv[0] << " data_file save_trees_file trees" <<endl; exit(-1);}
 
   float* data_load = NULL;
@@ -159,6 +159,7 @@ int main(int argc, char** argv){
   size_t points_num;
   int dim;
   // load_data(in_path, data_load, points_num,dim);
+  // load_data10m( data_load, points_num,dim);
   load_data100m( data_load, points_num,dim);
 
   Matrix<float> dataset(points_num,dim,data_load);//存的是每个向量的起始地址
